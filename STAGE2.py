@@ -1,13 +1,11 @@
 import pygame as pg
 import random
 
-
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 WIDTH = 1000
 HEIGHT = 600
-
 
 pg.init()
 pg.mixer.init() #para la música
@@ -18,14 +16,7 @@ pg.display.set_caption("THE QUEST")
 clock = pg.time.Clock() #para controlar los fps
 pg.time.get_ticks()
 
-asteroids_images = []
-asteroids_list = ["sprites\Steroid2.png", "sprites\Steroid3.png", "sprites\Steroid4.png"]
-for img in asteroids_list:
-    asteroids_images.append(pg.image.load(img).convert())
-
-
 crashsound = pg.mixer.Sound("music\colision.wav")
-
 
 class Asteroid(pg.sprite.Sprite): #creamos clase asteroide, la cual será subclase de la clase sprite
     def __init__(self): #inicalizamos clase
@@ -37,13 +28,18 @@ class Asteroid(pg.sprite.Sprite): #creamos clase asteroide, la cual será subcla
     def update(self): #para el movimiento
         SCORE = 0
         self.rect.x -= 5
-        if self.rect.x < -200 and STAGETIMER < 75: #así parece que se vayan perdiendo por la izquierda
+        if self.rect.x < -200 and STAGETIMER < 20: #así parece que se vayan perdiendo por la izquierda
                             #SI EL TIEMPO ES DE MÁS DE 20 SEG LOS ASTEROIDES YA NO APARECEN
                             #NOS SIRVE PARA HACER APARECER EL PLANETA
             SCORE += 10
             print(SCORE)
             self.rect.x = random.randrange(1200, 1500) #así parece que se vayan creando por la derecha
             self.rect.y = random.randrange(50, 550)
+
+asteroids_images = []
+asteroids_list = ["sprites\Steroid2.png", "sprites\Steroid3.png", "sprites\Steroid4.png"]
+for img in asteroids_list:
+    asteroids_images.append(pg.image.load(img).convert())
 
 class Navy(pg.sprite.Sprite): #creamos clase navy, la cual será subclase de la clase sprite
     def __init__(self): #inicalizamos clase
@@ -55,7 +51,7 @@ class Navy(pg.sprite.Sprite): #creamos clase navy, la cual será subclase de la 
         self.hp = 90
 
     def update(self, ymax = 600, ymin = 0): #para el movimiento
-        if STAGETIMER < 87:
+        if STAGETIMER < 28:
             if pg.key.get_pressed()[pg.K_UP] and self.rect.y > ymin + 50: #para que no se salga por arriba
                 self.rect.y -= 3
                 if pg.key.get_pressed()[pg.K_SPACE]:#gana velocidad apretando espacio
@@ -75,7 +71,6 @@ class Navy(pg.sprite.Sprite): #creamos clase navy, la cual será subclase de la 
                     self.image = pg.transform.flip(self.image, True, True)
             if self.rect.x < 550:
                 self.rect.x += 1
-
 
 class Crashanim(pg.sprite.Sprite):
     def __init__(self, center):
@@ -100,7 +95,6 @@ class Crashanim(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.center = center
 
-
 crash_anim = []
 for i in range (9):
     crash = "images/regularExplosion0{}.png".format(i)
@@ -108,7 +102,6 @@ for i in range (9):
     img.set_colorkey(BLACK)
     img_scale = pg.transform.scale(img, (100, 100))
     crash_anim.append(img_scale)
-
 
 def hpbar (surface, x, y, percentage):
     BAR_LENGHT = 130
@@ -119,12 +112,11 @@ def hpbar (surface, x, y, percentage):
     pg.draw.rect(surface, RED, fill)
     pg.draw.rect(surface, WHITE, border, 3)
 
-
-asteorid = Asteroid()
 asteroid_list = pg.sprite.Group() #lista en la cual almacenamos los asteorides
 all_sprite_list = pg.sprite.Group() #lista para almacenaer todos los sprites
 
-
+navy = Navy()
+all_sprite_list.add(navy)
 
 for i in range(7): #número de asteroides
     asteroid = Asteroid()
@@ -133,10 +125,6 @@ for i in range(7): #número de asteroides
     asteroid.rect.y = random.randrange(50, 550)  #se posicionan aleatoriamente en todo el eje Y
     asteroid_list.add(asteroid) #añadimos los asteorides a la lista
     all_sprite_list.add(asteroid) #añadimos los asteorides a la lista de todos los sprites
-
-navy = Navy()
-all_sprite_list.add(navy)
-
 
 planet2 = pg.image.load("images\planetstg2.png").convert()
 planet2.set_colorkey(BLACK)
@@ -152,11 +140,9 @@ while running:
         if event.type == pg.QUIT:
             running = False 
 
-
     all_sprite_list.update() #con este método TODOS los cambios que hagamos en las clases se activan automaticmanete
-    background = pg.image.load("images/backgroundstg2.jpg").convert()
-
     
+    background = pg.image.load("images/backgroundstg2.jpg").convert()
 
     hits = pg.sprite.spritecollide(navy, asteroid_list, True)
     for hit in hits:
@@ -174,18 +160,12 @@ while running:
             crash_anim.append(img_scale)
             running = True
 
-
     screen.blit(background,[0, 0]) #coordenadas dnd queremos el fondo
-    
     all_sprite_list.draw(screen) #dibujamos los sprites en pantalla
 
-   
     screen.blit(planet2, (pos_x2, pos_y2))
-    if STAGETIMER > 74:
+    if STAGETIMER > 18 and pos_x2 >= 530:
         pos_x2 -= 1
-        if pos_x2 == 530:
-            pos_x2 += 1
-
 
     scorecount = FONT.render("SCORE: " + str(STAGETIMER), 0, (WHITE))
     screen.blit(scorecount,(5, 0))
